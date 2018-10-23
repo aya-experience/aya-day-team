@@ -1,0 +1,162 @@
+@font-face {
+  font-family: "icomoon";
+  src: url("./icons/icomoon.eot?ro2msi");
+  src: url("./icons/icomoon.eot?ro2msi#iefix") format("embedded-opentype"),
+    url("./icons/icomoon.ttf?ro2msi") format("truetype"),
+    url("./icons/icomoon.woff?ro2msi") format("woff"),
+    url("./icons/icomoon.svg?ro2msi#icomoon") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="icon-"],
+[class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: "icomoon" !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  font-family: "Lato", sans-serif;
+  color: white;
+}
+
+.app,
+.navbar-brand {
+  background-image: url("stars.svg");
+}
+
+.icon-kanji:before {
+  content: "\e900";
+}
+
+.navbar {
+  background-color: #111;
+}
+
+.oval {
+  height: 400px;
+  width: 100%;
+  border: 2px solid #030020;
+  border-radius: 100%;
+  box-shadow: 0 2px 4px 0 rgba(255, 255, 255, 0.58);
+  margin-top: -375px;
+  position: absolute;
+  z-index: 9998;
+}
+
+.team {
+  text-shadow: 0 -1px 2px rgba(255, 255, 255, 0.5),
+    1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.element {
+    border: 2px solid transparent;
+}
+
+.element.focused {
+    border: 2px solid #030020;
+    border-radius: 4px;
+    box-shadow: 0 0 6px 0 rgba(255, 255, 255, 0.5);
+}
+
+.rounded {
+  border-radius: 100%;
+  transition: all 0.2s;
+  height: 120px;
+  width: 120px;
+}
+
+.rounded:active {
+  opacity: 0.7;
+}
+
+.details {
+  margin-left: 4px;
+}
+
+.reversed .details {
+  margin-left: 0;
+  margin-right: 4px;
+}
+
+.name {
+  font-size: 18px;
+  text-shadow: 0 -1px 3px rgba(255, 255, 255, 0.7),
+    1px 1px 3px rgba(255, 255, 255, 0.7);
+}
+
+.line {
+  border-bottom: 1px solid white;
+  margin-left: -60px;
+    margin-bottom: 10px;
+  width: 125px;
+}
+
+.reversed .line {
+  margin-left: 0;
+  margin-right: -60px;
+}
+
+.custom-notification {
+  transition: all 0.3s;
+  position: fixed;
+  opacity: 0;
+  top: 0rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 9999;
+}
+
+.custom-notification.active {
+  opacity: 1;
+  transform: translateY(1rem);
+}
+
+.qr {
+  height: 150px;
+}
+
+.desktop {
+  text-align: center;
+  height: 100vh;
+}
+
+.mega-size {
+  font-size: 40px;
+  text-align: center;
+  padding-top: 3rem;
+}
+
+.weird-margin {
+  margin-top: 100px;
+}
+
+.mobile-mini {
+  height: 100px;
+}
+
+.p-mobile {
+  font-size: 20px;
+  letter-spacing: 2px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.custom-margin {
+  margin-top: 120px;
+}
+
+.arrow {
+  margin-top: 80px;
+  height: 40px;
+}
