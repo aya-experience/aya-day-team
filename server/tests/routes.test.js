@@ -1,0 +1,72 @@
+const request = require('supertest');
+const server = require('../server');
+
+let responseStream;
+let responseRegister;
+
+// Close the server after each test
+afterEach(() => {
+  server.close();
+});
+
+// GET /stream and POST /register before all tests
+beforeAll(async done => {
+  responseStream = await request(server).get('/stream');
+  responseRegister = await request(server).post('/register');
+  done();
+});
+
+describe('Route: /stream', () => {
+  it('should respond with a valid status', async () => {
+    expect(responseStream.status).toEqual(200);
+  });
+
+  it('should respond with a valid response type', async () => {
+    expect(responseStream.type).toEqual('text/event-stream');
+  });
+
+  it('should respond with a valid header', async () => {
+    expect(responseStream.header).toHaveProperty('cache-control', 'no-cache');
+    expect(responseStream.header).toHaveProperty('connection', 'keep-alive');
+  });
+
+  it('should have a valid string response', async () => {
+    expect(typeof responseStream.text).toBe('string');
+  });
+
+  it('should have a valid stream output (heartbeat)', async () => {
+    // Evaluate each line of the response by splitting it
+    const resArray = responseStream.text.split('\n');
+    const retry = resArray[0];
+    const data = resArray[1];
+
+    expect(retry).toEqual('retry: 20000');
+    expect(data).toEqual('data: HEARTBEAT');
+  });
+});
+
+describe('Route: /register', () => {
+  it('should respond with a valid status', async () => {
+    expect(responseRegister.status).toEqual(200);
+  });
+
+  it('should respond with a valid response type', async () => {
+    expect(responseRegister.type).toEqual('text/event-stream');
+  });
+
+  it('should respond with a valid header', async () => {
+    expect(responseRegister.header).toHaveProperty('cache-control', 'no-cache');
+    expect(responseRegister.header).toHaveProperty('connection', 'keep-alive');
+  });
+
+  it('should return a valid response type and random key', async () => {
+    // Evaluate each line of the response by splitting it
+    const resArray = responseRegister.text.split('\n');
+    const event = resArray[0];
+    const data = resArray[1];
+
+    expect(event).toEqual('event: register');
+    expect(typeof data).toBe('string');
+    expect(data.length).toBeGreaterThan(1);
+  });
+});
