@@ -1,11 +1,11 @@
 import React from "react";
-import { Notification } from "./Notification";
+import { Notification } from "../Notification";
 import qr from "./qrwhite2.png";
 import mobile from "./mobile.svg";
 import arrow from "./arrow.svg";
-import webrtc from "./utils/webrtc.js";
+import webrtc from "../utils/webrtc.js";
 
-export class Desktop extends React.Component {
+class Desktop extends React.Component {
   constructor(props) {
     super(props);
 
@@ -15,7 +15,6 @@ export class Desktop extends React.Component {
     };
   }
 
-  // TODO: Solve bug of reconnection every 3 seconds.
   componentDidMount() {
     webrtc.handleRTCPeerConnection();
 
@@ -31,12 +30,7 @@ export class Desktop extends React.Component {
 
     // Catches errors
     this.state.source.onerror = (e) => {
-      console.log(e);
-      if (e.target.readyState == EventSource.CLOSED) {
-        // In case of deconnection
-      } else if (e.target.readyState == EventSource.CONNECTING) {
-        // In case of reconnection
-      }
+      console.error(e);
     };
 
     // Catches stream opening
@@ -79,3 +73,5 @@ export class Desktop extends React.Component {
     );
   }
 }
+
+export default Desktop;

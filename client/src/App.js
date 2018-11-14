@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { Mobile } from "./components/Mobile";
-import { Desktop } from "./components/Desktop";
+import Desktop from "./components/Desktop/Desktop";
 import "./App.css";
 
 export const Router = () => (
