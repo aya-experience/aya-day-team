@@ -1,29 +1,48 @@
 import React from "react";
-import io from "socket.io-client";
 import { Notification } from "./Notification";
 import qr from "./qrwhite2.png";
 import mobile from "./mobile.svg";
 import arrow from "./arrow.svg";
+import webrtc from "./utils/webrtc.js";
 
 export class Desktop extends React.Component {
   constructor(props) {
     super(props);
-    /* this.socket = io("http://192.168.1.127:2018"); */
-    this.socket = io("http://localhost:2018");
 
-    this.state = { isMobileAvailable: false };
+    this.state = {
+      isMobileAvailable: false,
+      source: new EventSource("http://localhost:8080/stream"),
+    };
   }
 
+  // TODO: Solve bug of reconnection every 3 seconds.
   componentDidMount() {
-    this.socket.emit("connect-browser");
-    this.socket.on("connect-mobile", () => {
-      this.setState({ isMobileAvailable: true });
+    webrtc.handleRTCPeerConnection();
 
-      setTimeout(() => {
-        /* window.location.replace("http://192.168.1.134:3000/team"); */
-        window.location.replace("https://aya-experience.com/team/");
-      }, 3000);
-    });
+    // On mount, set up SSE event handlers
+    this.handleSSE();
+  }
+
+  handleSSE() {
+    // Catches messages
+    this.state.source.onmessage = (e) => {
+      console.log("Received message: ", e.data);
+    };
+
+    // Catches errors
+    this.state.source.onerror = (e) => {
+      console.log(e);
+      if (e.target.readyState == EventSource.CLOSED) {
+        // In case of deconnection
+      } else if (e.target.readyState == EventSource.CONNECTING) {
+        // In case of reconnection
+      }
+    };
+
+    // Catches stream opening
+    this.state.source.onopen = (e) => {
+      console.log("Connected.");
+    };
   }
 
   render() {
