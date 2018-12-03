@@ -1,8 +1,8 @@
 module.exports = {
   // Generates a random 15 character key
   // isDesktop: boolean to add the correct key identifier at the end
-  generateKey: isDesktop => {
-    let key = Math.random()
+  generateKey: (isDesktop, generator) => {
+    let key = generator()
       .toString(36)
       .substring(2, 10);
 
