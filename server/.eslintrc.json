@@ -3,9 +3,11 @@
   "env": {
     "browser": true,
     "es6": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
-  "extends": ["airbnb-base", "prettier"],
+  "plugins": ["jest"],
+  "extends": ["airbnb-base", "prettier", "plugin:jest/recommended"],
   "rules": {
     "arrow-body-style": 0
   }

@@ -1,12 +1,14 @@
 const Koa = require('koa');
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
+const logger = require('koa-logger');
 const cors = require('@koa/cors');
 const utils = require('./utils');
 
 const app = new Koa();
 const router = new Router();
 
+app.use(logger());
 app.use(bodyParser());
 app.use(cors());
 
@@ -26,8 +28,6 @@ function SSEMessage(res, event, data) {
 
 // Registers a client's SDP and returns a randomly generated storage key
 router.post('/register', ctx => {
-  console.log('SDP Received: ', ctx.request.body);
-
   // Set response status, type and header
   ctx.response.status = 200;
   ctx.response.type = 'text/event-stream; charset=utf-8';
@@ -38,7 +38,6 @@ router.post('/register', ctx => {
 
   // Generate a random key for Redis
   const key = utils.generateKey(true);
-  console.log('Key generated: ', key);
 
   // TODO: Register client SDP to REDIS with random key
   // HERE
@@ -49,8 +48,6 @@ router.post('/register', ctx => {
 
 // Starts an SSE stream with a given client
 router.get('/stream', ctx => {
-  console.log('Connected to stream');
-
   // Set the response status, type and header
   ctx.response.status = 200;
   ctx.response.type = 'text/event-stream';
@@ -65,6 +62,8 @@ router.get('/stream', ctx => {
 
 app.use(router.routes()).use(router.allowedMethods());
 
-app.listen(8080, () => {
+const server = app.listen(8080, () => {
   console.log('Listening on port 8080');
 });
+
+module.exports = server;
