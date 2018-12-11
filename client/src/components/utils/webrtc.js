@@ -83,7 +83,7 @@ function registerSDP(sdp) {
   };
 
   axios
-    .post("http://localhost:8080/register", sdp, options)
+    .post("http://localhost:8080/register-desktop", sdp, options)
     .then(function(response) {
       console.log(response);
     })

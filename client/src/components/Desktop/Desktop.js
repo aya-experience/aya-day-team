@@ -1,17 +1,19 @@
 import React from "react";
 import { Notification } from "../Notification";
-import qr from "./qrwhite2.png";
 import mobile from "./mobile.svg";
 import arrow from "./arrow.svg";
 import webrtc from "../utils/webrtc.js";
+import QR from "./QR/QR";
 
 class Desktop extends React.Component {
   constructor(props) {
     super(props);
 
+    const sseURL = process.env.REACT_APP_SSE_STREAM;
+
     this.state = {
       isMobileAvailable: false,
-      source: new EventSource("http://localhost:8080/stream"),
+      source: new EventSource(sseURL),
     };
   }
 
@@ -23,6 +25,15 @@ class Desktop extends React.Component {
   }
 
   handleSSE() {
+    this.state.source.addEventListener("register-desktop", (e) => {
+      // Get URL based on current environment and the key we received
+      const QRUrl = `${process.env.REACT_APP_MOBILE}?key=${e.data}`;
+
+      this.setState({
+        QRUrl,
+      });
+    });
+
     // Catches messages
     this.state.source.onmessage = (e) => {
       console.log("Received message: ", e.data);
@@ -60,12 +71,17 @@ class Desktop extends React.Component {
               <p className="p-mobile">
                 OU prend le controle avec ton smartphone
               </p>
-              <img src={qr} alt="qr" className="qr" />
+
+              {this.state.QRUrl != null ? (
+                <QR URL={this.state.QRUrl} />
+              ) : (
+                <div>Loading...</div>
+              )}
             </div>
           </div>
 
           <Notification
-            text="A decide has been successfully connected. Wait a second for being redirected"
+            text="A device has been successfully connected. Wait a second for being redirected"
             isVisible={this.state.isMobileAvailable}
           />
         </div>

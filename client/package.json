@@ -6,11 +6,11 @@
     "axios": "^0.18.0",
     "classnames": "^2.2.6",
     "qrcode-generator": "^1.4.1",
-    "react": "^16.4.2",
-    "react-dom": "^16.4.2",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
     "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.5",
-    "socket.io-client": "^2.1.1"
+    "socket.io-client": "^2.2.0"
   },
   "scripts": {
     "start": "REACT_APP_ENV=dev react-scripts start",
@@ -19,9 +19,9 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "dotenv": "^6.1.0",
-    "enzyme": "^3.7.0",
-    "enzyme-adapter-react-16": "^1.7.0",
+    "dotenv": "^6.2.0",
+    "enzyme": "^3.8.0",
+    "enzyme-adapter-react-16": "^1.7.1",
     "eventsourcemock": "^2.0.0"
   }
 }

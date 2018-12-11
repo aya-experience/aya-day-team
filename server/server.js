@@ -4,6 +4,7 @@ const bodyParser = require('koa-bodyparser');
 const logger = require('koa-logger');
 const cors = require('@koa/cors');
 const utils = require('./utils');
+const Redis = require('./redis');
 
 const app = new Koa();
 const router = new Router();
@@ -44,24 +45,34 @@ function SSEMessage(ctx, event, data) {
 // ROUTER MIDDLEWARES
 
 /**
- * Register a client's SDP and return a random key
+ * Called when the desktop page is accessed
+ * Register the desktop's SDP and return a random key
  */
-router.post('/register', ctx => {
+router.post('/register-desktop', ctx => {
   // Generate a random key for Redis
   const key = utils.generateKey(true, Math.random);
 
   // Registering, send message to our SSE stream with the key we generated
   ctx.app.emit('message', {
-    type: 'register',
+    type: 'register-desktop',
     message: key,
   });
 
-  // TODO: Register client SDP to REDIS with random key
-  // HERE
+  // Register the Desktop's SDP with Redis here using the generated key
+  const SDP = ctx.request.body.sdp;
+  const redis = new Redis();
+  redis.set(key, SDP);
 
   // Confirm registering process
-  SSEMessage(ctx, 'register', 'OK');
+  SSEMessage(ctx, 'register-desktop', 'OK');
 });
+
+/**
+ * Called when the mobile page is accessed
+ * Broadcast the mobile's SDP to the desktop
+ * Get the desktop's SDP and send it back to the mobile
+ */
+router.post('/register-mobile', ctx => {});
 
 /**
  * Entry point to the SSE stream
@@ -75,15 +86,13 @@ router.get('/stream', ctx => {
 
     // Catches messages from other steps of the WebRTC process
     ctx.app.on('message', data => {
-      console.log('Message caught with data ', data);
       const { type, message } = data;
 
       // Handles every type of steps in the WebRTC process
       switch (type) {
-        case 'register':
+        case 'register-desktop':
           // Registering, sends back the generated key to the client
-          SSEMessage(ctx, 'register', message);
-          resolve();
+          SSEMessage(ctx, 'register-desktop', message);
           break;
         default:
           break;
