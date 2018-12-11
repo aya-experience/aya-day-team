@@ -5,7 +5,7 @@ import { Navbar } from "./Navbar";
 import { Notification } from "./Notification";
 import members from "../data/members.json";
 
-export class Mobile extends Component {
+class Mobile extends Component {
   constructor(props) {
     super(props);
 
@@ -66,3 +66,5 @@ export class Mobile extends Component {
     );
   }
 }
+
+export default Mobile;
