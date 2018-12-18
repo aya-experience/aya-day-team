@@ -2,7 +2,7 @@ import React from "react";
 import { Notification } from "../Notification";
 import mobile from "./mobile.svg";
 import arrow from "./arrow.svg";
-import webrtc from "../utils/webrtc.js";
+import WebRTC from "../utils/webrtc.js";
 import QR from "./QR/QR";
 
 class Desktop extends React.Component {
@@ -14,29 +14,36 @@ class Desktop extends React.Component {
     this.state = {
       isMobileAvailable: false,
       source: new EventSource(sseURL),
+      webRTC: new WebRTC(),
     };
   }
 
   componentDidMount() {
-    webrtc.handleRTCPeerConnection();
-
     // On mount, set up SSE event handlers
     this.handleSSE();
   }
 
   handleSSE() {
-    this.state.source.addEventListener("register-desktop", (e) => {
+    this.state.source.addEventListener("register-desktop-key", (e) => {
+      const data = JSON.parse(e.data);
+
       // Get URL based on current environment and the key we received
-      const QRUrl = `${process.env.REACT_APP_MOBILE}?key=${e.data}`;
+      const QRUrl = `${process.env.REACT_APP_MOBILE}?key=${data.value}`;
 
       this.setState({
         QRUrl,
       });
     });
 
+    this.state.source.addEventListener("register-desktop-sdp", (e) => {
+      const data = JSON.parse(e.data);
+      // TODO: set mobile SDP for WebRTC connection
+      console.log("--- MOBILE SDP: ", data.value);
+    });
+
     // Catches messages
     this.state.source.onmessage = (e) => {
-      console.log("Received message: ", e.data);
+      console.log("Received message: ", e);
     };
 
     // Catches errors
@@ -44,7 +51,6 @@ class Desktop extends React.Component {
       console.error(e);
     };
 
-    // Catches stream opening
     this.state.source.onopen = (e) => {
       console.log("Connected.");
     };

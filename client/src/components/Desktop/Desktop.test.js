@@ -6,18 +6,15 @@ import EventSource, { sources } from "eventsourcemock";
 
 enzyme.configure({ adapter: new Adapter() });
 
-// Unmock WebRTC related methods
-jest.unmock("../utils/webrtc.js");
-const myModule = require("../utils/webrtc");
-// Mock the method using unmockable object RTCPeerConnection
-myModule.handleRTCPeerConnection = jest.fn();
+// Mock our WebRTC class
+jest.mock("../utils/webrtc.js");
 
 Object.defineProperty(window, "EventSource", {
   value: EventSource,
 });
 
 describe("Desktop component", () => {
-  beforeEach(() => {
+  beforeAll(() => {
     console = {
       ...console,
       log: jest.fn(),
@@ -36,10 +33,7 @@ describe("Desktop component", () => {
       data: "Toto",
     };
     sources["http://localhost:8080/stream"].emitMessage(message);
-    expect(console.log).toHaveBeenCalledWith(
-      "Received message: ",
-      message.data,
-    );
+    expect(console.log).toHaveBeenCalledWith("Received message: ", message);
   });
 
   it("should log an error message from the SSE stream", () => {
