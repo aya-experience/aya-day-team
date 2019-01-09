@@ -12,7 +12,6 @@ function handleRTCPeerConnection() {
 
   myConnection = new RTCPeerConnection(configuration);
   console.log("RTCPeerConnection object was created");
-  console.log(myConnection);
 
   // Catch data channel messages
   myConnection.ondatachannel = function(event) {
@@ -82,16 +81,13 @@ function registerSDP(sdp) {
       "Access-Control-Allow-Origin": "*",
     },
   };
-  console.log("Sending SDP ", sdp);
 
   axios
-    .post("http://localhost:8080/register", sdp, options)
+    .post("http://localhost:8080/register-desktop", sdp, options)
     .then(function(response) {
       console.log(response);
     })
-    .catch(function(error) {
-      console.log(error);
-    });
+    .catch(function(error) {});
 }
 
 function send(value) {

@@ -4,6 +4,8 @@ const server = require('./server');
 let responseStream;
 let responseRegister;
 
+// TODO: Fix route tests
+
 // Close the server after each test
 afterEach(() => {
   server.close();
@@ -12,7 +14,7 @@ afterEach(() => {
 // GET /stream and POST /register before all tests
 beforeAll(async done => {
   responseStream = await request(server).get('/stream');
-  responseRegister = await request(server).post('/register');
+  responseRegister = await request(server).post('/register-desktop');
   done();
 });
 

@@ -1,12 +1,8 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import Desktop from "./Desktop";
 import * as enzyme from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 import EventSource, { sources } from "eventsourcemock";
-
-import mobile from "./mobile.svg";
-import arrow from "./arrow.svg";
 
 enzyme.configure({ adapter: new Adapter() });
 
@@ -55,8 +51,8 @@ describe("Desktop component", () => {
 
   it("should log a message from the SSE stream when opened", () => {
     enzyme.shallow(<Desktop />);
+    sources["http://localhost:8080/stream"].emitOpen();
     const message = "Connected.";
-    sources["http://localhost:8080/stream"].emitOpen(message);
     expect(console.log).toHaveBeenCalledWith(message);
   });
 });

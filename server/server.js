@@ -4,6 +4,7 @@ const bodyParser = require('koa-bodyparser');
 const logger = require('koa-logger');
 const cors = require('@koa/cors');
 const utils = require('./utils');
+const Redis = require('./redis');
 
 const app = new Koa();
 const router = new Router();
@@ -12,52 +13,92 @@ app.use(logger());
 app.use(bodyParser());
 app.use(cors());
 
-// Sends a heartbeat response every 20 seconds
-// Set heartbeat response to 20s
-function heartbeat(res) {
-  res.write('retry: 20000\n');
-  res.write(`data: HEARTBEAT\n\n`);
-}
+/**
+ * Sends back a message through the SSE stream
+ * @param {*} ctx - context of the HTTP request
+ * @param {String} event - type of response (register, heartbeat etc.)
+ * @param {String} data - data to be sent through the stream
+ */
+function SSEMessage(ctx, event, data) {
+  // Set the response status, type and headers
+  ctx.response.status = 200;
+  ctx.response.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
 
-function SSEMessage(res, event, data) {
-  res.write(`event: ${event}\n`);
-  res.write(`data: ${data}\n\n`);
+  // Handle heartbeat messages
+  // Set heartbeat timer to 20s
+  if (event === 'heartbeat') {
+    ctx.res.write('event: message\n');
+    ctx.res.write('data: HEARTBEAT\n\n');
+    return;
+  }
+
+  // Write through the response stream back to the client
+  ctx.res.write(`event: ${event}\n`);
+  ctx.res.write(`data: ${data}\n\n`);
 }
 
 // ROUTER MIDDLEWARES
 
-// Registers a client's SDP and returns a randomly generated storage key
-router.post('/register', ctx => {
-  // Set response status, type and header
-  ctx.response.status = 200;
-  ctx.response.type = 'text/event-stream; charset=utf-8';
-  ctx.response.set({
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
+/**
+ * Called when the desktop page is accessed
+ * Register the desktop's SDP and return a random key
+ */
+router.post('/register-desktop', ctx => {
+  // Generate a random key for Redis
+  const key = utils.generateKey(true, Math.random);
+
+  // Registering, send message to our SSE stream with the key we generated
+  ctx.app.emit('message', {
+    type: 'register-desktop',
+    message: key,
   });
 
-  // Generate a random key for Redis
-  const key = utils.generateKey(true);
+  // Register the Desktop's SDP with Redis here using the generated key
+  const SDP = ctx.request.body.sdp;
+  const redis = new Redis();
+  redis.set(key, SDP);
 
-  // TODO: Register client SDP to REDIS with random key
-  // HERE
-
-  // Send the random key back to the client
-  SSEMessage(ctx.res, 'register', key);
+  // Confirm registering process
+  SSEMessage(ctx, 'register-desktop', 'OK');
 });
 
-// Starts an SSE stream with a given client
-router.get('/stream', ctx => {
-  // Set the response status, type and header
-  ctx.response.status = 200;
-  ctx.response.type = 'text/event-stream';
-  ctx.response.set({
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-  });
+/**
+ * Called when the mobile page is accessed
+ * Broadcast the mobile's SDP to the desktop
+ * Get the desktop's SDP and send it back to the mobile
+ */
+router.post('/register-mobile', ctx => {});
 
-  // Send back a heartbeat response every 20s
-  heartbeat(ctx.res, new Date().toLocaleTimeString());
+/**
+ * Entry point to the SSE stream
+ * When called, set up heartbeats every 20 seconds.
+ */
+router.get('/stream', ctx => {
+  // Resolve this promise once our WebRTC connection is established
+  return new Promise(resolve => {
+    // Send heartbeat
+    SSEMessage(ctx, 'heartbeat', new Date().toLocaleTimeString());
+
+    // Catches messages from other steps of the WebRTC process
+    ctx.app.on('message', data => {
+      const { type, message } = data;
+
+      // Handles every type of steps in the WebRTC process
+      switch (type) {
+        case 'register-desktop':
+          // Registering, sends back the generated key to the client
+          SSEMessage(ctx, 'register-desktop', message);
+          break;
+        default:
+          break;
+      }
+    });
+  });
 });
 
 app.use(router.routes()).use(router.allowedMethods());
