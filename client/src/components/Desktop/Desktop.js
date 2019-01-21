@@ -37,8 +37,11 @@ class Desktop extends React.Component {
 
     this.state.source.addEventListener("register-desktop-sdp", (e) => {
       const data = JSON.parse(e.data);
+
       // TODO: set mobile SDP for WebRTC connection
+
       console.log("--- MOBILE SDP: ", data.value);
+      this.state.webRTC.onAnswer(data.value, "answer");
     });
 
     // Catches messages

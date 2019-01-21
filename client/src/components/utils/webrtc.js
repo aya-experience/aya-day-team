@@ -33,15 +33,36 @@ class WebRTC {
       };
     };
 
-    // Catch new ICE candidate
-    this.myConnection.onicecandidate = (event) => {
-      // when the browser finds an ice candidate we send it to another peer
-      if (event.candidate) {
-        this.send({
-          type: "candidate",
-          message: event.candidate,
-        });
-      }
+    this.createOffer();
+    this.openDataChannel();
+  }
+
+  // Get local session description and make an offer
+  createOffer() {
+    this.myConnection.createOffer(
+      (offer) => {
+        console.log("Creating and sending SDP.");
+
+        if (this.isMobile) {
+          this.registerMobileSDP(offer.sdp, this.key);
+        } else {
+          this.registerSDP(offer);
+        }
+
+        console.log("---- Setting local offer");
+        this.myConnection.setLocalDescription(offer);
+      },
+      (error) => {
+        console.log("Error on offer creation. ", error);
+      },
+    );
+  }
+
+  // Creates a data channel
+  openDataChannel() {
+    console.log("Opening data channel.");
+    var dataChannelOptions = {
+      reliable: true,
     };
 
     this.createOffer();
@@ -134,7 +155,11 @@ class WebRTC {
   }
 
   //when another user answers to our offer
-  onAnswer(answer) {
+  onAnswer(sdp, type) {
+    const answer = {};
+    console.log("SDP = ", sdp);
+    answer.sdp = sdp;
+    answer.type = type;
     this.myConnection.setRemoteDescription(new RTCSessionDescription(answer));
   }
 
