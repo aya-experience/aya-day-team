@@ -118,7 +118,7 @@ router.get('/stream', ctx => {
 
   // Start a promise to catch events sent by other routes
   // Resolve this promise once our WebRTC connection is established
-  return new Promise(resolve => {
+  return new Promise(() => {
     // Catches messages from other steps of the WebRTC process
     ctx.app.on('message', data => {
       const { type, message } = data;
