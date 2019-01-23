@@ -1,60 +1,17 @@
-const Koa = require('koa');
 const Router = require('koa-router');
-const bodyParser = require('koa-bodyparser');
-const logger = require('koa-logger');
-const cors = require('@koa/cors');
-const utils = require('./utils');
-const Redis = require('./redis');
+const utils = require('../utils/utils');
+const Redis = require('../redis/redis.service');
+const sse = require('../sse/sse');
 
-const app = new Koa();
 const router = new Router();
 
 const redis = new Redis();
-
-app.use(logger());
-app.use(bodyParser());
-app.use(cors());
-
-/**
- * Sends back a message through the SSE stream
- * @param {*} ctx - context of the HTTP request
- * @param {String} event - type of response (register, heartbeat etc.)
- * @param {String} data - data to be sent through the stream
- */
-function SSEMessage(ctx, event, data) {
-  // Set the response status, type and headers
-  ctx.response.status = 200;
-  ctx.response.set({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive',
-    'Access-Control-Allow-Origin': '*',
-  });
-
-  // Handle heartbeat messages
-  if (event === 'heartbeat') {
-    ctx.res.write('event: message\n');
-    ctx.res.write('data: HEARTBEAT\n\n');
-    return;
-  }
-
-  // Data wrapper
-  const wrapper = {
-    value: data,
-  };
-
-  // Write through the response stream back to the client
-  ctx.res.write(`event: ${event}\n`);
-  ctx.res.write(`data: ${JSON.stringify(wrapper)}\n\n`);
-}
-
-// ROUTER MIDDLEWARES
 
 /**
  * Called when the desktop page is accessed
  * Register the desktop's SDP and return a random key
  */
-router.post('/register-desktop', ctx => {
+router.post('/register-desktop', async ctx => {
   // Generate a random key for Redis
   const key = utils.generateKey(true, Math.random);
 
@@ -66,7 +23,11 @@ router.post('/register-desktop', ctx => {
 
   // Register the Desktop's SDP with Redis here using the generated key
   const SDP = ctx.request.body.sdp;
-  redis.set(key, SDP);
+  const res = await redis.set(key, SDP);
+
+  if (!res) {
+    console.error('Error, could not set value');
+  }
 
   redis.subscribe(key);
 
@@ -82,7 +43,7 @@ router.post('/register-desktop', ctx => {
   });
 
   // Confirm registering process
-  SSEMessage(ctx, 'register-desktop-key', 'OK');
+  sse.sendMessage(ctx, 'register-desktop-key', 'OK');
 });
 
 /**
@@ -105,16 +66,12 @@ router.post('/register-mobile', async ctx => {
     message: desktopSDP,
   });
 
-  SSEMessage(ctx, 'register-mobile', 'OK');
+  sse.sendMessage(ctx, 'register-mobile', 'OK');
 });
 
-/**
- * Entry point to the SSE stream
- * When called, set up heartbeats every 20 seconds.
- */
 router.get('/stream', ctx => {
   // Send heartbeat
-  SSEMessage(ctx, 'heartbeat', new Date().toLocaleTimeString());
+  sse.sendMessage(ctx, 'heartbeat', new Date().toLocaleTimeString());
 
   // Start a promise to catch events sent by other routes
   // Resolve this promise once our WebRTC connection is established
@@ -127,13 +84,13 @@ router.get('/stream', ctx => {
       switch (type) {
         case 'register-desktop-key':
           // Registering, sends back the generated key to the client
-          SSEMessage(ctx, 'register-desktop-key', message);
+          sse.sendMessage(ctx, 'register-desktop-key', message);
           break;
         case 'register-desktop-sdp':
-          SSEMessage(ctx, 'register-desktop-sdp', message);
+          sse.sendMessage(ctx, 'register-desktop-sdp', message);
           break;
         case 'register-mobile':
-          SSEMessage(ctx, 'register-mobile', message);
+          sse.sendMessage(ctx, 'register-mobile', message);
           break;
         default:
           break;
@@ -142,10 +99,4 @@ router.get('/stream', ctx => {
   });
 });
 
-app.use(router.routes()).use(router.allowedMethods());
-
-const server = app.listen(8080, () => {
-  console.log('Listening on port 8080');
-});
-
-module.exports = server;
+module.exports = router;

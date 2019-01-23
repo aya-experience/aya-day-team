@@ -1,7 +1,7 @@
 import React from 'react';
 import mobile from './mobile.svg';
 import arrow from './arrow.svg';
-import WebRTC from '../utils/webrtc.js';
+import WebRTC from '../utils/webrtc';
 import QR from './QR/QR';
 import Notification from '../Notification';
 
@@ -13,7 +13,7 @@ class Desktop extends React.Component {
 
     this.state = {
       isMobileAvailable: false,
-      source: new EventSource(sseURL),
+      source: new window.EventSource(sseURL),
       webRTC: new WebRTC()
     };
   }
@@ -24,7 +24,8 @@ class Desktop extends React.Component {
   }
 
   handleSSE() {
-    this.state.source.addEventListener('register-desktop-key', e => {
+    const { source, webRTC } = this.state;
+    source.addEventListener('register-desktop-key', e => {
       const data = JSON.parse(e.data);
 
       // Get URL based on current environment and the key we received
@@ -35,31 +36,33 @@ class Desktop extends React.Component {
       });
     });
 
-    this.state.source.addEventListener('register-desktop-sdp', e => {
+    source.addEventListener('register-desktop-sdp', e => {
       const data = JSON.parse(e.data);
 
       // TODO: set mobile SDP for WebRTC connection
 
       console.log('--- MOBILE SDP: ', data.value);
-      this.state.webRTC.onAnswer(data.value, 'answer');
+      webRTC.onAnswer(data.value, 'answer');
     });
 
     // Catches messages
-    this.state.source.onmessage = e => {
+    source.onmessage = e => {
       console.log('Received message: ', e);
     };
 
     // Catches errors
-    this.state.source.onerror = e => {
+    source.onerror = e => {
       console.error(e);
     };
 
-    this.state.source.onopen = e => {
+    source.onopen = () => {
       console.log('Connected.');
     };
   }
 
   render() {
+    const { QRUrl, isMobileAvailable } = this.state;
+
     return (
       <div className="bg-near-black app desktop">
         <div className="container">
@@ -81,17 +84,13 @@ class Desktop extends React.Component {
                 OU prend le controle avec ton smartphone
               </p>
 
-              {this.state.QRUrl != null ? (
-                <QR URL={this.state.QRUrl} />
-              ) : (
-                <div>Loading...</div>
-              )}
+              {QRUrl != null ? <QR URL={QRUrl} /> : <div>Loading...</div>}
             </div>
           </div>
 
           <Notification
             text="A device has been successfully connected. Wait a second for being redirected"
-            isVisible={this.state.isMobileAvailable}
+            isVisible={isMobileAvailable}
           />
         </div>
       </div>

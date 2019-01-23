@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import members from '../../data/members.json';
-import WebRTC from '../utils/webrtc.js';
+import WebRTC from '../utils/webrtc';
 import Notification from '../Notification';
 import Element from '../Element';
 import Navbar from '../Navbar';
@@ -14,25 +14,41 @@ class Mobile extends Component {
     this.state = {
       showNotification: false,
       notificationText: '',
-      source: new EventSource(sseURL),
+      source: new window.EventSource(sseURL),
       key: window.location.search.split('=')[1],
+      // eslint-disable-next-line
       webRTC: null
     };
   }
 
+  componentDidMount() {
+    const { key } = this.state;
+    this.handleSSE();
+    this.setState({
+      // eslint-disable-next-line
+      webRTC: new WebRTC(true, key)
+    });
+  }
+
   // TODO: Remove direct DOM manipulation for a React approach
   handlePress = (name, event) => {
-    let elements = document.getElementsByClassName('focused');
+    const elements = document.getElementsByClassName('focused');
     Array.prototype.map.call(elements, elem => {
       elem.classList.remove('focused');
     });
-    let element = event.target.closest('.element');
+    const element = event.target.closest('.element');
     element.classList.add('focused');
   };
 
+  handleNotification = () => {
+    this.setState({ showNotification: false });
+  };
+
   handleSSE() {
-    this.state.source.addEventListener('register-mobile', e => {
-      const data = e.data;
+    const { source } = this.state;
+
+    source.addEventListener('register-mobile', e => {
+      const { data } = e;
       // TODO: Register the WebRTC transaction with the desktop client
       console.log('--- DESKTOP SDP: ', data);
     });
@@ -45,7 +61,7 @@ class Mobile extends Component {
     // eslint-disable-next-line
     this.state.source.onerror = e => {
       console.error(e);
-      if (e.target.readyState === EventSource.CLOSED) {
+      if (e.target.readyState === window.EventSource.CLOSED) {
         // In case of disconnection
         // Display notification to user
         this.setState({
@@ -56,7 +72,7 @@ class Mobile extends Component {
         setTimeout(() => {
           this.setState({ showNotification: false });
         }, 3000);
-      } else if (e.target.readyState === EventSource.CONNECTING) {
+      } else if (e.target.readyState === window.EventSource.CONNECTING) {
         // In case of connection
         // Display notification to user
         this.setState({
@@ -75,24 +91,12 @@ class Mobile extends Component {
     };
   }
 
-  componentDidMount() {
-    this.handleSSE();
-    this.setState({
-      webRTC: new WebRTC(true, this.state.key)
-    });
-  }
-
-  handleNotification = () => {
-    this.setState({ showNotification: false });
-  };
-
   render() {
+    const { notificationText, showNotification } = this.state;
+
     return (
       <div className="bg-near-black app">
-        <Notification
-          text={this.state.notificationText}
-          isVisible={this.state.showNotification}
-        />
+        <Notification text={notificationText} isVisible={showNotification} />
         <Navbar />
         <div className="content pt5">
           <div className="ttu tc self-center tracked f3 pb2 team">Team</div>
