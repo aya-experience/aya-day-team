@@ -1,8 +1,8 @@
 const request = require('supertest');
 const server = require('./server');
 
-let responseStream;
-let responseRegister;
+let responseRegisterDesktop;
+let responseRegisterMobile;
 
 // TODO: Fix route tests
 
@@ -13,61 +13,68 @@ afterEach(() => {
 
 // GET /stream and POST /register before all tests
 beforeAll(async done => {
-  responseStream = await request(server).get('/stream');
-  responseRegister = await request(server).post('/register-desktop');
+  responseRegisterDesktop = await request(server)
+    .post('/register-desktop')
+    .send({
+      key: 'key-Desktop',
+      sdp: 'sdp',
+    });
+  responseRegisterMobile = await request(server)
+    .post('/register-mobile')
+    .send({
+      key: 'key-Desktop',
+      sdp: 'sdp',
+    });
   done();
 });
 
-describe('Route: /stream', () => {
+describe('Route: /register-desktop', () => {
   it('should respond with a valid status', () => {
-    expect(responseStream.status).toEqual(200);
+    expect(responseRegisterDesktop.status).toEqual(200);
   });
 
   it('should respond with a valid response type', () => {
-    expect(responseStream.type).toEqual('text/event-stream');
+    expect(responseRegisterDesktop.type).toEqual('text/event-stream');
   });
 
   it('should respond with a valid header', () => {
-    expect(responseStream.header).toHaveProperty('cache-control', 'no-cache');
-    expect(responseStream.header).toHaveProperty('connection', 'keep-alive');
-  });
-
-  it('should have a valid string response', () => {
-    expect(typeof responseStream.text).toBe('string');
-  });
-
-  it('should have a valid stream output (heartbeat)', () => {
-    // Evaluate each line of the response by splitting it
-    const resArray = responseStream.text.split('\n');
-    const retry = resArray[0];
-    const data = resArray[1];
-
-    expect(retry).toEqual('retry: 20000');
-    expect(data).toEqual('data: HEARTBEAT');
-  });
-});
-
-describe('Route: /register', () => {
-  it('should respond with a valid status', () => {
-    expect(responseRegister.status).toEqual(200);
-  });
-
-  it('should respond with a valid response type', () => {
-    expect(responseRegister.type).toEqual('text/event-stream');
-  });
-
-  it('should respond with a valid header', () => {
-    expect(responseRegister.header).toHaveProperty('cache-control', 'no-cache');
-    expect(responseRegister.header).toHaveProperty('connection', 'keep-alive');
+    expect(responseRegisterDesktop.header).toHaveProperty('cache-control', 'no-cache');
+    expect(responseRegisterDesktop.header).toHaveProperty('connection', 'keep-alive');
   });
 
   it('should return a valid response type and random key', () => {
     // Evaluate each line of the response by splitting it
-    const resArray = responseRegister.text.split('\n');
+    const resArray = responseRegisterDesktop.text.split('\n');
     const event = resArray[0];
     const data = resArray[1];
 
-    expect(event).toEqual('event: register');
+    expect(event).toEqual('event: register-desktop-key');
+    expect(typeof data).toBe('string');
+    expect(data.length).toBeGreaterThan(1);
+  });
+});
+
+describe('Route: /register-mobile', () => {
+  it('should respond with a valid status', () => {
+    expect(responseRegisterMobile.status).toEqual(200);
+  });
+
+  it('should respond with a valid response type', () => {
+    expect(responseRegisterMobile.type).toEqual('text/event-stream');
+  });
+
+  it('should respond with a valid header', () => {
+    expect(responseRegisterMobile.header).toHaveProperty('cache-control', 'no-cache');
+    expect(responseRegisterMobile.header).toHaveProperty('connection', 'keep-alive');
+  });
+
+  it('should return a valid response type and random key', () => {
+    // Evaluate each line of the response by splitting it
+    const resArray = responseRegisterMobile.text.split('\n');
+    const event = resArray[0];
+    const data = resArray[1];
+
+    expect(event).toEqual('event: register-mobile');
     expect(typeof data).toBe('string');
     expect(data.length).toBeGreaterThan(1);
   });

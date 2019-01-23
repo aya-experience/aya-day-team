@@ -1,6 +1,6 @@
 const utils = require('./utils');
 
-describe('Utils methods', () => {
+describe('generateKey', () => {
   it('should generate a desktop key', () => {
     const key = utils.generateKey(true, Math.random);
     const token = key.split('-')[1];

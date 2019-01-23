@@ -3,7 +3,7 @@ import { Element } from "../Element";
 import { Navbar } from "../Navbar";
 import { Notification } from "../Notification";
 import members from "../../data/members.json";
-import webrtc from "../utils/webrtc.js";
+import WebRTC from "../utils/webrtc.js";
 
 class Mobile extends Component {
   constructor(props) {
@@ -15,7 +15,8 @@ class Mobile extends Component {
       showNotification: false,
       notificationText: "",
       source: new EventSource(sseURL),
-      key: new URLSearchParams(this.props.location.search).get("key"),
+      key: window.location.search.split("=")[1],
+      webRTC: null,
     };
   }
 
@@ -30,9 +31,15 @@ class Mobile extends Component {
   };
 
   handleSSE() {
+    this.state.source.addEventListener("register-mobile", (e) => {
+      const data = e.data;
+      // TODO: Register the WebRTC transaction with the desktop client
+      console.log("--- DESKTOP SDP: ", data);
+    });
+
     // eslint-disable-next-line
     this.state.source.onmessage = (e) => {
-      console.log("Received message: ", e.data);
+      console.log("Received message: ", e);
     };
 
     // eslint-disable-next-line
@@ -70,7 +77,9 @@ class Mobile extends Component {
 
   componentDidMount() {
     this.handleSSE();
-    webrtc.handleRTCPeerConnection(true, this.state.key);
+    this.setState({
+      webRTC: new WebRTC(true, this.state.key),
+    });
   }
 
   handleNotification = () => {

@@ -9,6 +9,8 @@ const Redis = require('./redis');
 const app = new Koa();
 const router = new Router();
 
+const redis = new Redis();
+
 app.use(logger());
 app.use(bodyParser());
 app.use(cors());
@@ -30,16 +32,20 @@ function SSEMessage(ctx, event, data) {
   });
 
   // Handle heartbeat messages
-  // Set heartbeat timer to 20s
   if (event === 'heartbeat') {
     ctx.res.write('event: message\n');
     ctx.res.write('data: HEARTBEAT\n\n');
     return;
   }
 
+  // Data wrapper
+  const wrapper = {
+    value: data,
+  };
+
   // Write through the response stream back to the client
   ctx.res.write(`event: ${event}\n`);
-  ctx.res.write(`data: ${data}\n\n`);
+  ctx.res.write(`data: ${JSON.stringify(wrapper)}\n\n`);
 }
 
 // ROUTER MIDDLEWARES
@@ -54,17 +60,29 @@ router.post('/register-desktop', ctx => {
 
   // Registering, send message to our SSE stream with the key we generated
   ctx.app.emit('message', {
-    type: 'register-desktop',
+    type: 'register-desktop-key',
     message: key,
   });
 
   // Register the Desktop's SDP with Redis here using the generated key
   const SDP = ctx.request.body.sdp;
-  const redis = new Redis();
   redis.set(key, SDP);
 
+  redis.subscribe(key);
+
+  console.log('-- KEY: ', key);
+
+  // Called when we receive the mobile SDP
+  redis.subscriber.on('message', (channel, message) => {
+    // Send mobile SDP to desktop
+    ctx.app.emit('message', {
+      type: 'register-desktop-sdp',
+      message,
+    });
+  });
+
   // Confirm registering process
-  SSEMessage(ctx, 'register-desktop', 'OK');
+  SSEMessage(ctx, 'register-desktop-key', 'OK');
 });
 
 /**
@@ -72,27 +90,50 @@ router.post('/register-desktop', ctx => {
  * Broadcast the mobile's SDP to the desktop
  * Get the desktop's SDP and send it back to the mobile
  */
-router.post('/register-mobile', ctx => {});
+router.post('/register-mobile', async ctx => {
+  // Random key to get the desktop SDP from the Redis database
+  const { key, sdp } = ctx.request.body;
+
+  // Get the SDP from the database
+  const desktopSDP = await redis.get(key);
+
+  redis.publish(key, sdp);
+
+  // Send desktop SDP to mobile
+  ctx.app.emit('message', {
+    type: 'register-mobile',
+    message: desktopSDP,
+  });
+
+  SSEMessage(ctx, 'register-mobile', 'OK');
+});
 
 /**
  * Entry point to the SSE stream
  * When called, set up heartbeats every 20 seconds.
  */
 router.get('/stream', ctx => {
+  // Send heartbeat
+  SSEMessage(ctx, 'heartbeat', new Date().toLocaleTimeString());
+
+  // Start a promise to catch events sent by other routes
   // Resolve this promise once our WebRTC connection is established
   return new Promise(resolve => {
-    // Send heartbeat
-    SSEMessage(ctx, 'heartbeat', new Date().toLocaleTimeString());
-
     // Catches messages from other steps of the WebRTC process
     ctx.app.on('message', data => {
       const { type, message } = data;
 
       // Handles every type of steps in the WebRTC process
       switch (type) {
-        case 'register-desktop':
+        case 'register-desktop-key':
           // Registering, sends back the generated key to the client
-          SSEMessage(ctx, 'register-desktop', message);
+          SSEMessage(ctx, 'register-desktop-key', message);
+          break;
+        case 'register-desktop-sdp':
+          SSEMessage(ctx, 'register-desktop-sdp', message);
+          break;
+        case 'register-mobile':
+          SSEMessage(ctx, 'register-mobile', message);
           break;
         default:
           break;

@@ -1,4 +1,5 @@
 const redis = require('redis');
+const { promisify } = require('util');
 
 class Redis {
   // TODO: Handle config
@@ -6,8 +7,27 @@ class Redis {
     const PORT = '6379';
     const HOST = '127.0.0.1';
     this.client = redis.createClient(PORT, HOST);
+    this.subscriber = redis.createClient();
+    this.publisher = redis.createClient();
 
     this.handleEvents();
+  }
+
+  /**
+   * Subscribe to a given channel
+   * @param {String} name
+   */
+  subscribe(name) {
+    this.subscriber.subscribe(name);
+  }
+
+  /**
+   * Publish a given message to a given channel
+   * @param {String} message
+   * @param {String} name
+   */
+  publish(name, message) {
+    this.publisher.publish(name, message);
   }
 
   handleEvents() {
@@ -25,12 +45,7 @@ class Redis {
   }
 
   get(key) {
-    this.client.get(key, (error, result) => {
-      if (error) {
-        throw error;
-      }
-      return result;
-    });
+    return promisify(this.client.get).bind(this.client)(key);
   }
 }
 
