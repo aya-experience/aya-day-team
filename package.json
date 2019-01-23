@@ -6,15 +6,11 @@
   "scripts": {
     "install": "cd client && npm i && cd ../server && npm i",
     "postci": "cd client && npm ci && cd ../server && npm ci",
-    "dev:back": "cd server && npm run dev",
-    "dev:front": "cd server && npm run start",
-    "dev": "npm run dev:back && npm run dev:front",
     "test:back": "cd server && npm run lint && npm run test",
     "test:front": "cd client && npm run lint && npm run test",
     "test": "npm run test:back && npm run test:front",
-    "build:back": "cd server && npm run build",
     "build:front": "cd client && npm run build",
-    "build": "npm run build:back && npm run build:front",
+    "build": "npm run build:front",
     "publish": "echo 'TODO'"
   },
   "repository": {

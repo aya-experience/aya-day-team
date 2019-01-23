@@ -17,7 +17,7 @@
     "build": "REACT_APP_ENV=prod react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "lint": "eslint ./src/**/*.js"
+    "lint": "eslint ."
   },
   "devDependencies": {
     "dotenv": "^6.2.0",
