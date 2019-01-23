@@ -1,5 +1,5 @@
 language: "node_js"
-node_js: "10"
+node_js: "11"
 
 cache:
   directories:
@@ -11,32 +11,23 @@ services:
 
 jobs:
   include:
-    # Client jobs
-    - stage: "Client"
-      name: "Linting"
+    # Install and Build
+    - stage: "Build"
+      name: "install"
       script:
-        - cd ./client
         - npm ci
-        - npm run lint
-    - # Client
-      name: "Testing"
+    -
+      name: "build"
       script:
-        - cd ./client
-        - npm ci
+        - npm run build
+    # Lint and Test
+    - stage: "Test"
+      script:
         - npm run test
-    # Server jobs
-    - stage: "Server"
-      name: "Linting"
+    - stage: "Deploy"
+      if: branch = master
       script:
-        - cd ./server
-        - npm ci
-        - npm run lint
-    - # Server
-      name: "Testing"
-      script:
-        - cd ./server
-        - npm ci
-        - npm run test
+        - npm run deploy
 
 notifications:
   email: false
