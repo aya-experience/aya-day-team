@@ -1,11 +1,13 @@
-import React from "react";
+import React from 'react';
 
-export const Notification = ({ text, isVisible }) => (
+const Notification = ({ text, isVisible }) => (
   <div
     className={`notification custom-notification is-primary z-999 ${
-      isVisible ? "active" : ""
+      isVisible ? 'active' : ''
     }`}
   >
     {text}
   </div>
 );
+
+export default Notification;
