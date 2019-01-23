@@ -1,7 +1,7 @@
 /* eslint-disable */
-import React from "react";
+import React from 'react';
 
-export const Navbar = () => (
+const Navbar = () => (
   <nav className="navbar is-fixed-top" aria-label="main navigation">
     <div className="navbar-brand flex flex-column items-center">
       <a
@@ -13,3 +13,5 @@ export const Navbar = () => (
     </div>
   </nav>
 );
+
+export default Navbar;

@@ -1,9 +1,9 @@
-import React from "react";
-import { Notification } from "../Notification";
-import mobile from "./mobile.svg";
-import arrow from "./arrow.svg";
-import WebRTC from "../utils/webrtc.js";
-import QR from "./QR/QR";
+import React from 'react';
+import mobile from './mobile.svg';
+import arrow from './arrow.svg';
+import WebRTC from '../utils/webrtc.js';
+import QR from './QR/QR';
+import Notification from '../Notification';
 
 class Desktop extends React.Component {
   constructor(props) {
@@ -14,7 +14,7 @@ class Desktop extends React.Component {
     this.state = {
       isMobileAvailable: false,
       source: new EventSource(sseURL),
-      webRTC: new WebRTC(),
+      webRTC: new WebRTC()
     };
   }
 
@@ -24,35 +24,38 @@ class Desktop extends React.Component {
   }
 
   handleSSE() {
-    this.state.source.addEventListener("register-desktop-key", (e) => {
+    this.state.source.addEventListener('register-desktop-key', e => {
       const data = JSON.parse(e.data);
 
       // Get URL based on current environment and the key we received
       const QRUrl = `${process.env.REACT_APP_MOBILE}?key=${data.value}`;
 
       this.setState({
-        QRUrl,
+        QRUrl
       });
     });
 
-    this.state.source.addEventListener("register-desktop-sdp", (e) => {
+    this.state.source.addEventListener('register-desktop-sdp', e => {
       const data = JSON.parse(e.data);
+
       // TODO: set mobile SDP for WebRTC connection
-      console.log("--- MOBILE SDP: ", data.value);
+
+      console.log('--- MOBILE SDP: ', data.value);
+      this.state.webRTC.onAnswer(data.value, 'answer');
     });
 
     // Catches messages
-    this.state.source.onmessage = (e) => {
-      console.log("Received message: ", e);
+    this.state.source.onmessage = e => {
+      console.log('Received message: ', e);
     };
 
     // Catches errors
-    this.state.source.onerror = (e) => {
+    this.state.source.onerror = e => {
       console.error(e);
     };
 
-    this.state.source.onopen = (e) => {
-      console.log("Connected.");
+    this.state.source.onopen = e => {
+      console.log('Connected.');
     };
   }
 

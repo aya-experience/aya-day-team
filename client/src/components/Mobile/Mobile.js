@@ -1,9 +1,9 @@
-import React, { Component } from "react";
-import { Element } from "../Element";
-import { Navbar } from "../Navbar";
-import { Notification } from "../Notification";
-import members from "../../data/members.json";
-import WebRTC from "../utils/webrtc.js";
+import React, { Component } from 'react';
+import members from '../../data/members.json';
+import WebRTC from '../utils/webrtc.js';
+import Notification from '../Notification';
+import Element from '../Element';
+import Navbar from '../Navbar';
 
 class Mobile extends Component {
   constructor(props) {
@@ -13,44 +13,44 @@ class Mobile extends Component {
 
     this.state = {
       showNotification: false,
-      notificationText: "",
+      notificationText: '',
       source: new EventSource(sseURL),
-      key: window.location.search.split("=")[1],
-      webRTC: null,
+      key: window.location.search.split('=')[1],
+      webRTC: null
     };
   }
 
   // TODO: Remove direct DOM manipulation for a React approach
   handlePress = (name, event) => {
-    let elements = document.getElementsByClassName("focused");
-    Array.prototype.map.call(elements, (elem) => {
-      elem.classList.remove("focused");
+    let elements = document.getElementsByClassName('focused');
+    Array.prototype.map.call(elements, elem => {
+      elem.classList.remove('focused');
     });
-    let element = event.target.closest(".element");
-    element.classList.add("focused");
+    let element = event.target.closest('.element');
+    element.classList.add('focused');
   };
 
   handleSSE() {
-    this.state.source.addEventListener("register-mobile", (e) => {
+    this.state.source.addEventListener('register-mobile', e => {
       const data = e.data;
       // TODO: Register the WebRTC transaction with the desktop client
-      console.log("--- DESKTOP SDP: ", data);
+      console.log('--- DESKTOP SDP: ', data);
     });
 
     // eslint-disable-next-line
-    this.state.source.onmessage = (e) => {
-      console.log("Received message: ", e);
+    this.state.source.onmessage = e => {
+      console.log('Received message: ', e);
     };
 
     // eslint-disable-next-line
-    this.state.source.onerror = (e) => {
+    this.state.source.onerror = e => {
       console.error(e);
       if (e.target.readyState === EventSource.CLOSED) {
         // In case of disconnection
         // Display notification to user
         this.setState({
-          notificationText: "Error: Connection closed",
-          showNotification: true,
+          notificationText: 'Error: Connection closed',
+          showNotification: true
         });
 
         setTimeout(() => {
@@ -60,17 +60,17 @@ class Mobile extends Component {
         // In case of connection
         // Display notification to user
         this.setState({
-          notificationText: "Connecting...",
-          showNotification: true,
+          notificationText: 'Connecting...',
+          showNotification: true
         });
       }
     };
 
     // eslint-disable-next-line
-    this.state.source.onopen = (e) => {
-      console.log("Connected.");
+    this.state.source.onopen = e => {
+      console.log('Connected.');
       this.setState({
-        showNotification: false,
+        showNotification: false
       });
     };
   }
@@ -78,7 +78,7 @@ class Mobile extends Component {
   componentDidMount() {
     this.handleSSE();
     this.setState({
-      webRTC: new WebRTC(true, this.state.key),
+      webRTC: new WebRTC(true, this.state.key)
     });
   }
 

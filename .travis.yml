@@ -1,0 +1,42 @@
+language: "node_js"
+node_js: "10"
+
+cache:
+  directories:
+    - "./client/node_modules"
+    - "./server/node_modules"
+
+services:
+  - redis-server
+
+jobs:
+  include:
+    # Client jobs
+    - stage: "Client"
+      name: "Linting"
+      script:
+        - cd ./client
+        - npm ci
+        - npm run lint
+    - # Client
+      name: "Testing"
+      script:
+        - cd ./client
+        - npm ci
+        - npm run test
+    # Server jobs
+    - stage: "Server"
+      name: "Linting"
+      script:
+        - cd ./server
+        - npm ci
+        - npm run lint
+    - # Server
+      name: "Testing"
+      script:
+        - cd ./server
+        - npm ci
+        - npm run test
+
+notifications:
+  email: false
