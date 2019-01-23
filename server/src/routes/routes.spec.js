@@ -1,10 +1,8 @@
 const request = require('supertest');
-const server = require('./server');
+const server = require('../server');
 
 let responseRegisterDesktop;
 let responseRegisterMobile;
-
-// TODO: Fix route tests
 
 // Close the server after each test
 afterEach(() => {

@@ -13,6 +13,16 @@ class Redis {
     this.handleEvents();
   }
 
+  handleEvents() {
+    this.client.on('connect', () => {
+      console.log('Redis client connected');
+    });
+
+    this.client.on('error', err => {
+      console.log(`Something went wrong ${err}`);
+    });
+  }
+
   /**
    * Subscribe to a given channel
    * @param {String} name
@@ -28,16 +38,6 @@ class Redis {
    */
   publish(name, message) {
     this.publisher.publish(name, message);
-  }
-
-  handleEvents() {
-    this.client.on('connect', () => {
-      console.log('Redis client connected');
-    });
-
-    this.client.on('error', err => {
-      console.log(`Something went wrong ${err}`);
-    });
   }
 
   set(key, value) {

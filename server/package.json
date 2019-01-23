@@ -4,10 +4,12 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon server.js",
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
     "lint": "eslint **.js",
     "test": "jest --forceExit",
-    "tdd": "jest --watch"
+    "tdd": "jest --watch",
+    "redis:start": "echo 'docker'"
   },
   "dependencies": {
     "@koa/cors": "^2.2.2",
