@@ -1,10 +1,8 @@
 const request = require('supertest');
-const server = require('./server');
+const server = require('../server');
 
 let responseRegisterDesktop;
 let responseRegisterMobile;
-
-// TODO: Fix route tests
 
 // Close the server after each test
 afterEach(() => {
@@ -29,7 +27,6 @@ beforeAll(async done => {
 });
 
 describe('Route: /register-desktop', () => {
-
   it('should respond with a valid status', () => {
     expect(responseRegisterDesktop.status).toEqual(200);
   });
@@ -56,7 +53,6 @@ describe('Route: /register-desktop', () => {
 });
 
 describe('Route: /register-mobile', () => {
-
   it('should respond with a valid status', () => {
     expect(responseRegisterMobile.status).toEqual(200);
   });
