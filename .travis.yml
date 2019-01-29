@@ -11,13 +11,8 @@ services:
 
 jobs:
   include:
-    # Install and Build
+    # Build
     - stage: "Build"
-      name: "install"
-      script:
-        - npm ci
-    -
-      name: "build"
       script:
         - npm run build
     # Lint and Test
@@ -25,7 +20,7 @@ jobs:
       script:
         - npm run test
     - stage: "Deploy"
-      if: branch = master
+      if: branch = master && type == push
       script:
         - npm run deploy
 

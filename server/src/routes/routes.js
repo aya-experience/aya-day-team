@@ -1,6 +1,6 @@
 const Router = require('koa-router');
 const utils = require('../utils/utils');
-const Redis = require('../redis/redis');
+const Redis = require('../redis/redis.service');
 const sse = require('../sse/sse');
 
 const router = new Router();
@@ -11,7 +11,7 @@ const redis = new Redis();
  * Called when the desktop page is accessed
  * Register the desktop's SDP and return a random key
  */
-router.post('/register-desktop', ctx => {
+router.post('/register-desktop', async ctx => {
   // Generate a random key for Redis
   const key = utils.generateKey(true, Math.random);
 
@@ -23,7 +23,11 @@ router.post('/register-desktop', ctx => {
 
   // Register the Desktop's SDP with Redis here using the generated key
   const SDP = ctx.request.body.sdp;
-  redis.set(key, SDP);
+  const res = await redis.set(key, SDP);
+
+  if (!res) {
+    console.error('Error, could not set value');
+  }
 
   redis.subscribe(key);
 

@@ -1,12 +1,12 @@
-import React, { Component } from "react";
-import qrcode from "qrcode-generator";
+import React, { Component } from 'react';
+import qrcode from 'qrcode-generator';
 
 class QR extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      QR: "",
+      QRcode: ''
     };
   }
 
@@ -14,7 +14,8 @@ class QR extends Component {
    * On mount, generate the QR code with the URL prop
    */
   componentDidMount() {
-    this.generateQRCode(this.props.URL);
+    const { URL } = this.props;
+    this.generateQRCode(URL);
   }
 
   /**
@@ -22,17 +23,18 @@ class QR extends Component {
    * @param {String} URL - The link for the QR code
    */
   generateQRCode(URL) {
-    const qr = qrcode(10, "L");
+    const qr = qrcode(10, 'L');
     qr.addData(URL);
     qr.make();
 
     this.setState({
-      QR: qr.createDataURL(),
+      QRcode: qr.createDataURL()
     });
   }
 
   render() {
-    return <img src={this.state.QR} />;
+    const { QRcode } = this.state;
+    return <img src={QRcode} alt="" />;
   }
 }
 

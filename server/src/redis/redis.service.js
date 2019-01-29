@@ -2,11 +2,8 @@ const redis = require('redis');
 const { promisify } = require('util');
 
 class Redis {
-  // TODO: Handle config
-  constructor() {
-    const PORT = '6379';
-    const HOST = '127.0.0.1';
-    this.client = redis.createClient(PORT, HOST);
+  constructor(port = process.env.REDIS_PORT, host = process.env.REDIS_HOST) {
+    this.client = redis.createClient(port, host);
     this.subscriber = redis.createClient();
     this.publisher = redis.createClient();
 
@@ -19,7 +16,7 @@ class Redis {
     });
 
     this.client.on('error', err => {
-      console.log(`Something went wrong ${err}`);
+      console.error(`Something went wrong ${err}`);
     });
   }
 
@@ -28,7 +25,7 @@ class Redis {
    * @param {String} name
    */
   subscribe(name) {
-    this.subscriber.subscribe(name);
+    return promisify(this.subscriber.subscribe).bind(this.subscriber)(name);
   }
 
   /**
@@ -37,11 +34,11 @@ class Redis {
    * @param {String} name
    */
   publish(name, message) {
-    this.publisher.publish(name, message);
+    return promisify(this.publisher.publish).bind(this.publisher)(name, message);
   }
 
   set(key, value) {
-    this.client.set(key, value);
+    return promisify(this.client.set).bind(this.client)(key, value);
   }
 
   get(key) {
